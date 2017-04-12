@@ -1,6 +1,6 @@
 ---
 title: "Part II 電腦作業"
-output: html_notebook   
+output: html_notebook    
 ---
 作業題目有些LaTex數學式，你可以按RStudio上方的Preview來呈現完整的數學符號。
 
