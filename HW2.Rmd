@@ -1,6 +1,6 @@
 ---
 title: "Part II 電腦作業"
-output: html_notebook 
+output: html_notebook  
 ---
 作業題目有些LaTex數學式，你可以按RStudio上方的Preview來呈現完整的數學符號。
 
@@ -34,6 +34,13 @@ wage_data<-pdata.frame(wage_data,c("nr","year"))
 ```{r}
 str(wage_data$nr)
 str(wage_data$year)
+
+
+lm(model,data)->ols1
+bptest(ols1)
+
+model %>% lm(data) %>% bptest()  
+
 ```
 
 > factor是代表類別資料的一種class，它可以細分成可排序(ordered)類別（如年份、月份）及不可排序(unordered)類別（如性別）。
