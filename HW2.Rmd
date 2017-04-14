@@ -10,13 +10,14 @@ output: html_notebook
 ```{r, message=FALSE, warning=FALSE}
 rm(list=ls())
 library(plm)
+library(readr)
+library(dplyr)
 ```
 
 
 1. 引入WAGEPAN.rda這個資料。
 ```{r}
 load("~/Part-II-Assignment/WAGEPAN.rdata")
-View(WAGEPAN)
 wage_data<-WAGEPAN
 ```
 
@@ -34,23 +35,20 @@ wage_data<-pdata.frame(wage_data,c("nr","year"))
 ```{r}
 str(wage_data$nr)
 str(wage_data$year)
-
-
-lm(model,data)->ols1
-bptest(ols1)
-
-model %>% lm(data) %>% bptest()  
-
+levels(wage_data$nr)
+levels(wage_data$year)
 ```
 
 > factor是代表類別資料的一種class，它可以細分成可排序(ordered)類別（如年份、月份）及不可排序(unordered)類別（如性別）。
 
 4. 請依照<http://stats.idre.ucla.edu/r/modules/factor-variables/>的說明，將year轉成可排序類別變數
 ```{r}
-
+year.order<-ordered(wage_data$year,levels=c("1980","1981","1982","1983","1984","1985","1986","1987"))
+View(year.order)
+is.factor(year.order)
 ```
 
-
+as.logical(wage_data$union)
 > WAGE_data裡有一些變數會隨著時間而改變，比如取對數後的實質薪資($lwage$)、工作經驗($exper$)、婚姻狀況($married$)和工會狀況($union$)。還有一些變數不會隨時間而改變，比如種族($hispan$和$black$)、教育年限($educ$)。
 
 ### 初步資料觀察
@@ -58,7 +56,10 @@ model %>% lm(data) %>% bptest()
 
 5. 請將union使用as.logical()轉成logical  class，接著使用geom_boxplot()來繪製比較union=TRUE或FALSE兩群資料的lwage分配箱形圖（如何看請自行Wiki），並描述你的觀察。
 ```{r}
-
+as.logical(wage_data$union)
+library(ggplot2)
+wage_data %>% 
+  ggplot(aes(x=union&TRUE,y=lwage))+geom_boxplot()
 ```
 
 
