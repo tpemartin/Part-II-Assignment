@@ -73,13 +73,18 @@ WAGE_data%>%group_by(union==1)%>%summarise(mean(lwage))
  7. 我們擔心“單純比較不同工會狀態的平均薪資，反應出來的可能不會是單純的工會效果。會不會還包含教育年限的影響？” 請在不做迴歸估計下，單純觀察資料來判斷以上的擔心是否成立。
 ```{r}
 WAGE_data%>%group_by(educ,union)%>%summarise(mean(lwage))
+WAGE_data%>%filter(union==1)->Tunion
+WAGE_data%>%filter(union==0)->Funion
+
+Tunion%>%ggplot(aes(x=educ,y=lwage))+geom_point()+geom_smooth()
+Funion%>%ggplot(aes(x=educ,y=lwage))+geom_point()+geom_smooth()
 
 
 ```
 
 8. 將資料依教育年限高低分成≥12與<12兩群(變數取名為educ.high)，使用educ.high與union兩變數，觀察不同教育年限與工會狀態間的平均log薪資差異，並描述你看到的現象（有故事性更好）。[hint: dplyr::group_by()可以放超過一個分類變數，用逗點分隔即可 ]
 ```{r}
-
+WAGE_data%>%group_by(educ>=12,educ<12,union)%>%summarise(mean(lwage))
 ```
 
 ### 模型估計
