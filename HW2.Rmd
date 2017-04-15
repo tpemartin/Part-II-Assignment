@@ -101,12 +101,23 @@ stargazer(pool1,pool2,type="text")
 
 10. 分別計算個別勞動者在樣本期間的平均lwage與平均union，接著畫出兩者間的離散圖及在圖面上加上估計迴歸線。由兩者間的關係，說明勞動者的固定效果如何影響lwage與union兩個變數。
 ```{r}
-WAGE_data %>% ggplot(aes(x=lwage,y=union))+  geom_point()+geom_smooth()
+WAGE_data %>%group_by(nr) %>% summarise(mean(lwage),mean(union))->WAGE_data2
+
+WAGE_data2
+pool1$coefficients
+WAGE_data2 %>% ggplot(aes(y=`mean(lwage)`,x=`mean(union)`))+  geom_point()+stat_function(fun=function(x){
+  pool1$coefficients[1]+pool1$coefficients[2]*x
+  },color="black",linetype="dashed")->wage.ols.pool1
+wage.ols.pool1
 ```
 
 
-11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，那一個變數的離散度為零？為什麼？
+11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，哪一個變數的離散度為零？為什麼？
 ```{r}
+WAGE_data$lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
+WAGE_data$union_demean<-Within(WAGE_data$union,effect=c('individual'))
+WAGE_data$educ_demean<-Within(WAGE_data$educ,effect=c('individual'))
+
 
 ```
 
@@ -114,16 +125,20 @@ WAGE_data %>% ggplot(aes(x=lwage,y=union))+  geom_point()+geom_smooth()
 $$lwage_{it}=\beta_{1}union_{it}+c_{i}+\epsilon_{it}$$
 請分別從固定效果（其估計式有時稱為within estimator）及隨機效果來估算$\beta_1$。
 ```{r, warning=FALSE}
+fe1<-plm(model1, data=WAGE_data, model='within', effect='individual')
+
+re1<-plm(model1, data=WAGE_data, model='random')
+stargazer(fe1,re1,type = "text")
 
 ```
 
 13. 請檢定固定效果是否與勞動者的工會狀態有關連，並說明適不適合使用隨機效果模型。
 ```{r}
-
+phtest(fe1,re1)
 ```
 
 14. 請檢定是否存在單純與個人特質有關的隨機效果項，並說明適不適合使用Pooled OLS。
 ```{r}
-
+pwtest(pool1) 
 ```
 
