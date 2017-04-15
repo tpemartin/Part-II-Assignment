@@ -55,11 +55,15 @@ wage_order
 
 5. 請將union使用as.logical()轉成logical  class，接著使用geom_boxplot()來繪製比較union=TRUE或FALSE兩群資料的lwage分配箱形圖（如何看請自行Wiki），並描述你的觀察。
 
+A:由箱型圖可以看出參加工會的人比沒參加工會的人薪資離散程度較高，
+此外由加入公會的中位數與平均數皆高於沒加入公會的中位數與平均數中可以看出加入公會的生活水準較高。
+
 ```{r}
 as.logical(WAGE_data$union)->WAGE_data$lunion
 library(dplyr)
 library(ggplot2)
 WAGE_data %>% ggplot(aes(x=WAGE_data$lunion,y=WAGE_data$lwage))+geom_boxplot()
+WAGE_data %>% group_by(union)%>%summarise(mean(lwage))
 ```
 
 
@@ -70,6 +74,8 @@ WAGE_data %>% group_by(lunion) %>% summarise(mean(lwage),sd(lwage))
 ```
 
  7. 我們擔心“單純比較不同工會狀態的平均薪資，反應出來的可能不會是單純的工會效果。會不會還包含教育年限的影響？” 請在不做迴歸估計下，單純觀察資料來判斷以上的擔心是否成立。
+ 
+ A:先把是否有加入公會分組，在看其個別的教育年限對薪資比例影響，可看出教育年限較高的可能本身薪資也較高，也較願意加入公會。
 ```{r}
 WAGE_data %>% group_by(educ,lunion) %>% summarise(mean(lwage),sd(lwage))
 a1<-filter(WAGE_data, union==1)
@@ -81,6 +87,9 @@ a0 %>% ggplot(aes(x=educ,y=lwage,color=year))+geom_bar(stat="identity")
 ```
 
 8. 將資料依教育年限高低分成≥12與<12兩群(變數取名為educ.high)，使用educ.high與union兩變數，觀察不同教育年限與工會狀態間的平均log薪資差異，並描述你看到的現象（有故事性更好）。[hint: dplyr::group_by()可以放超過一個分類變數，用逗點分隔即可 ]
+
+A:不論是否加入公會，教育年限較高的平均薪資也較高，反過來看不論教育年限高低，加入公會的平均薪資也教高。若以現實面可能發生的情況是，教育年限較高的人本身薪資也較高，也會想回護自身權益而加入公會，同時提高教育年限較低也加入公會的人的薪資。
+
 ```{r}
 WAGE_data$educ.high<-(WAGE_data$educ>=12)
 WAGE_data %>% group_by(educ.high,lunion) %>% summarise(mean(lwage),sd(lwage))
@@ -91,6 +100,9 @@ WAGE_data %>% group_by(educ.high,lunion) %>% summarise(mean(lwage),sd(lwage))
 $$lwage_{it}	=\beta_{0}+\beta_{1}union_{it}+\epsilon_{it}...(model1)$$
 $$lwage_{it}	=\beta_{0}+\beta_{1}union_{it}+\beta_{2}educ.high_{i}+\epsilon_{it}...(model2)$$
 個別對兩個模型進行Pooled OLS估計，兩者的$\beta_1$係數估計值有什麼不同？為什麼？[hint: 可以使用stargazer套件，並以指令stargazer(model1,model2,type="text")將估計結果並列呈現以方便比較]
+
+A:再加入是否為大學學歷這個變數時，是否加入公會對於薪資比例的影響下降了1.4%。可能是薪資的解釋力並非全由是否加入公會來判定，是否為大學學歷也佔很大的因數。
+
 ```{r, message=FALSE, warning=FALSE}
 library(stargazer)
 model1<-lwage~union
@@ -101,6 +113,9 @@ stargazer(pool1,pool2,type="text")
 ```
 
 10. 分別計算個別勞動者在樣本期間的平均lwage與平均union，接著畫出兩者間的離散圖及在圖面上加上估計迴歸線。由兩者間的關係，說明勞動者的固定效果如何影響lwage與union兩個變數。
+
+A:勞動者在8年內平均參加工會程度越高者，其平均薪資比例較高。
+
 ```{r}
 WAGE_data %>%group_by(nr) %>% summarise(mean(lwage),mean(union))->WAGE_data2
 
@@ -114,13 +129,22 @@ wage.ols.pool1
 
 
 11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，哪一個變數的離散度為零？為什麼？
+
+A:教育年限的離散程度為0，個人的教育年限在1980~1987年間無任何變動。
+
 ```{r}
-WAGE_data$lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
-WAGE_data$union_demean<-Within(WAGE_data$union,effect=c('individual'))
-WAGE_data$educ_demean<-Within(WAGE_data$educ,effect=c('individual'))
-sd(WAGE_data$lwage_demean)
-sd(WAGE_data$union_demean)
-sd(WAGE_data$educ_demean)
+library(psych)
+lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
+
+union_demean<-Within(WAGE_data$union,effect=c('individual'))
+
+educ_demean<-Within(WAGE_data$educ,effect=c('individual'))
+sd(lwage_demean)
+sd(union_demean)
+sd(educ_demean)
+ggplot(data=WAGE_data,aes(x=educ_demean,y=lwage_demean,color=year))+
+  geom_point()
+
 ```
 
 12. 考慮如下的模型
@@ -135,11 +159,16 @@ stargazer(fe1,re1,type = "text")
 ```
 
 13. 請檢定固定效果是否與勞動者的工會狀態有關連，並說明適不適合使用隨機效果模型。
+
+A:由p-value可以看出結果為顯著異於零(拒絕H0)，表示固定效果與勞動者的工會狀態有關，不宜使用隨機效果模型。
 ```{r}
 phtest(fe1,re1)
 ```
 
 14. 請檢定是否存在單純與個人特質有關的隨機效果項，並說明適不適合使用Pooled OLS。
+
+A:由p-value可看出結果為顯著異於零(拒絕H0)，存在個人特質的隨機效果項，
+
 ```{r}
 pwtest(pool1) 
 ```
