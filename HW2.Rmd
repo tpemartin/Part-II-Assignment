@@ -84,7 +84,12 @@ Funion%>%ggplot(aes(x=educ,y=lwage))+geom_point()+geom_smooth()
 
 8. 將資料依教育年限高低分成≥12與<12兩群(變數取名為educ.high)，使用educ.high與union兩變數，觀察不同教育年限與工會狀態間的平均log薪資差異，並描述你看到的現象（有故事性更好）。[hint: dplyr::group_by()可以放超過一個分類變數，用逗點分隔即可 ]
 ```{r}
+WAGE_data$educ.high<-WAGE_data$educ>=12
 WAGE_data%>%group_by(educ>=12,educ<12,union)%>%summarise(mean(lwage))
+
+
+##受越多教育的人有相對較佳的薪資,而在加入工會後,平均來說又有更高的薪資,可知加入工會事件不錯的事
+##但我們可以發現教育年限較高者加入了工會比起教育年限低者加入工會的薪資漲幅較差,可能是教育年限低者的工會有較強勢的效果
 ```
 
 ### 模型估計
@@ -93,34 +98,55 @@ $$lwage_{it}	=\beta_{0}+\beta_{1}union_{it}+\epsilon_{it}...(model1)$$
 $$lwage_{it}	=\beta_{0}+\beta_{1}union_{it}+\beta_{2}educ.high_{i}+\epsilon_{it}...(model2)$$
 個別對兩個模型進行Pooled OLS估計，兩者的$\beta_1$係數估計值有什麼不同？為什麼？[hint: 可以使用stargazer套件，並以指令stargazer(model1,model2,type="text")將估計結果並列呈現以方便比較]
 ```{r, message=FALSE, warning=FALSE}
+lwage~union->model1
+pool1<-plm(model1, data=WAGE_data, model='pooling')
+summary(pool1)
+lwage~union+educ.high->model2
+pool2<-plm(model2,data=WAGE_data,model='pooling')
 
+library(stargazer)
+stargazer(pool1,pool2,type="text")
 ```
 
 10. 分別計算個別勞動者在樣本期間的平均lwage與平均union，接著畫出兩者間的離散圖及在圖面上加上估計迴歸線。由兩者間的關係，說明勞動者的固定效果如何影響lwage與union兩個變數。
 ```{r}
+WAGE_data %>% group_by(nr) %>% summarise_each(funs(mean)) ->LUmean
+
+
+LUmean%>%ggplot(aes(union,lwage))+geom_point()+geom_smooth()
+
+LUmean
+##可以看到當加入工會的機率越大薪水有越高的趨勢
 
 ```
 
 
 11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，那一個變數的離散度為零？為什麼？
 ```{r}
+WAGE_data$lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
+WAGE_data$union_demean<-Within(WAGE_data$union,effect=c('individual'))
 
+
+educ.high_demean<-Within(educ.high,effect=c('individual'))
 ```
 
 12. 考慮如下的模型
 $$lwage_{it}=\beta_{1}union_{it}+c_{i}+\epsilon_{it}$$
 請分別從固定效果（其估計式有時稱為within estimator）及隨機效果來估算$\beta_1$。
 ```{r, warning=FALSE}
-
+fixeffect<-plm(model1, data=WAGE_data, model='within')
+summary(fixeffect)
+random<-plm(model2, data=WAGE_data, model='random')
+summary(random)
 ```
 
 13. 請檢定固定效果是否與勞動者的工會狀態有關連，並說明適不適合使用隨機效果模型。
 ```{r}
-
+phtest(fixeffect,random)
 ```
 
 14. 請檢定是否存在單純與個人特質有關的隨機效果項，並說明適不適合使用Pooled OLS。
 ```{r}
-
+pwtest(pool1)
 ```
 
