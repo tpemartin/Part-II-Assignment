@@ -58,7 +58,8 @@ library(dplyr)
 library(ggplot2)
 WAGE_data%>%ggplot(aes(x=lunion,y=lwage))+geom_boxplot()
 
-
+##可以透過箱形圖看到不管有沒有加入工會中位數都是一樣的,但是我們可以發現沒有加入工會有著較大的離散度,
+##這意味著不加入工會風險較高,而這也代表有機會賺到較多的錢,但反之也可能收入非常低
 ```
 ##
 雖然加入或不加入公會對一半的人差不多,
@@ -78,7 +79,7 @@ WAGE_data%>%filter(union==0)->Funion
 
 Tunion%>%ggplot(aes(x=educ,y=lwage))+geom_point()+geom_smooth()
 Funion%>%ggplot(aes(x=educ,y=lwage))+geom_point()+geom_smooth()
-
+#可以發現薪資不管在有工會或沒工會的狀況下,隨教育上升薪資也會跟著上升
 
 ```
 
@@ -123,11 +124,17 @@ LUmean
 
 11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，那一個變數的離散度為零？為什麼？
 ```{r}
-WAGE_data$lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
-WAGE_data$union_demean<-Within(WAGE_data$union,effect=c('individual'))
+lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
+union_demean<-Within(WAGE_data$union,effect=c('individual'))
 
 
-educ.high_demean<-Within(educ.high,effect=c('individual'))
+educ_demean<-Within(WAGE_data$educ,effect=c('individual'))
+library(psych)
+describe(lwage_demean)
+describe(union_demean)
+describe(educ_demean)
+
+#一輩子只會受一次教育,故並不會隨時間而改變,另兩項皆有機會隨時間改變
 ```
 
 12. 考慮如下的模型
@@ -143,10 +150,14 @@ summary(random)
 13. 請檢定固定效果是否與勞動者的工會狀態有關連，並說明適不適合使用隨機效果模型。
 ```{r}
 phtest(fixeffect,random)
+
+##P-value=0.002665非常顯著固不適合使用RE,也表示固定效果與勞動者的工會狀況有關連
 ```
 
 14. 請檢定是否存在單純與個人特質有關的隨機效果項，並說明適不適合使用Pooled OLS。
 ```{r}
 pwtest(pool1)
+
+##非常顯著,所以有與個人特質有關的隨機效果項 故不適合使用POOLED OLS
 ```
 
