@@ -15,14 +15,14 @@ library(plm)
 
 1. 引入WAGEPAN.rda這個資料。
 ```{r}
-
+load("~/Part-II-Assignment/WAGEPAN.rdata")
 ```
 
 在WAGEPAN.rda這個資料中，nr代表某個勞動者，year代表資料所來自年份
 
 2. 請定義資料成為panel data，並取名WAGE_data。
 ```{r}
-
+WAGE_data<-pdata.frame(WAGEPAN,c("nr","year"))
 ```
 
 ***
@@ -30,13 +30,20 @@ library(plm)
 
 3. 使用str()檢查nr及year兩個變數的class, 並使用levels()來查看資料橫跨年份
 ```{r}
-
+str(WAGE_data$nr)
+str(WAGE_data$year)
+levels(WAGE_data$year)
 ```
 
 > factor是代表類別資料的一種class，它可以細分成可排序(ordered)類別（如年份、月份）及不可排序(unordered)類別（如性別）。
 
 4. 請依照<http://stats.idre.ucla.edu/r/modules/factor-variables/>的說明，將year轉成可排序類別變數
 ```{r}
+wage<-factor(WAGE_data$year)
+is.factor(wage)
+levels(wage)
+wage_order<-ordered(wage,levels(wage))
+wage_order 
 
 ```
 
@@ -48,7 +55,9 @@ library(plm)
 
 5. 請將union使用as.logical()轉成logical  class，接著使用geom_boxplot()來繪製比較union=TRUE或FALSE兩群資料的lwage分配箱形圖（如何看請自行Wiki），並描述你的觀察。
 ```{r}
-
+as.logical(WAGE_data$union)->WAGE_data$lunion
+library(ggplot2)
+WAGE_data %>% ggplot(aes(x=WAGE_data$lunion,y=WAGE_data$lwage))+geom_boxplot()
 ```
 
 
