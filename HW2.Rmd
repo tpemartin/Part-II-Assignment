@@ -15,7 +15,7 @@ library(plm)
 
 1. 引入WAGEPAN.rda這個資料。
 ```{r}
-
+load("C:/Users/User/Documents/Part-II-Assignment/WAGEPAN.rdata")
 ```
 
 在WAGEPAN.rda這個資料中，nr代表某個勞動者，year代表資料所來自年份
@@ -23,6 +23,7 @@ library(plm)
 2. 請定義資料成為panel data，並取名WAGE_data。
 ```{r}
 
+WAGE_data<-pdata.frame(WAGEPAN,c("nr","year"))
 ```
 
 ***
@@ -30,14 +31,18 @@ library(plm)
 
 3. 使用str()檢查nr及year兩個變數的class, 並使用levels()來查看資料橫跨年份
 ```{r}
-
+str(WAGE_data$nr)
+str(WAGE_data$year)
+levels(WAGE_data$year)
+levels(WAGE_data$nr)
 ```
 
 > factor是代表類別資料的一種class，它可以細分成可排序(ordered)類別（如年份、月份）及不可排序(unordered)類別（如性別）。
 
 4. 請依照<http://stats.idre.ucla.edu/r/modules/factor-variables/>的說明，將year轉成可排序類別變數
 ```{r}
-
+factor(WAGE_data$year)
+ordered(WAGE_data$year)
 ```
 
 
@@ -48,17 +53,27 @@ library(plm)
 
 5. 請將union使用as.logical()轉成logical  class，接著使用geom_boxplot()來繪製比較union=TRUE或FALSE兩群資料的lwage分配箱形圖（如何看請自行Wiki），並描述你的觀察。
 ```{r}
+as.logical(WAGE_data$union)->lunion
+library(dplyr)
+library(ggplot2)
+WAGE_data%>%ggplot(aes(x=lunion,y=lwage))+geom_boxplot()
+
 
 ```
+##
+雖然加入或不加入公會對一半的人差不多,
+但是若不加入公會的話離散質較大,代表著少了一些保障但反過來說少了工會限制薪資帽 會有更高的薪資##
 
 
 6. 請計算比較不同工會狀況的平均lwage差異[hint: 在作業1中，我們學到使用dplyr::group_by()與dplyr::summarise()來計算不同群組的組內特徵。]
 ```{r}
-
+WAGE_data%>%group_by(union==1)%>%summarise(mean(lwage))
 ```
 
  7. 我們擔心“單純比較不同工會狀態的平均薪資，反應出來的可能不會是單純的工會效果。會不會還包含教育年限的影響？” 請在不做迴歸估計下，單純觀察資料來判斷以上的擔心是否成立。
 ```{r}
+WAGE_data%>%group_by(educ,union)%>%summarise(mean(lwage))
+
 
 ```
 
