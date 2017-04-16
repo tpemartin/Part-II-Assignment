@@ -58,8 +58,7 @@ as.logical(wage_data$union)
 ```{r}
 as.logical(wage_data$union)
 library(ggplot2)
-wage_data %>% 
-  ggplot(aes(x=union&TRUE,y=lwage))+geom_boxplot()
+wage_data %>% ggplot(aes(x=union&TRUE,y=lwage))+geom_boxplot()
 ```
 
 
@@ -95,13 +94,18 @@ stargazer(model1,model2,type="text")
 
 10. 分別計算個別勞動者在樣本期間的平均lwage與平均union，接著畫出兩者間的離散圖及在圖面上加上估計迴歸線。由兩者間的關係，說明勞動者的固定效果如何影響lwage與union兩個變數。
 ```{r}
-
+wage_data %>% group_by(nr) %>% summarise(mean(lwage),mean(union))-> nrdata
+nrdata
+nrdata %>% ggplot(aes(x=`mean(union)`,y=`mean(lwage)`))+geom_point()+geom_smooth(moedel=lm)->f1
+f1
 ```
 
 
 11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，那一個變數的離散度為零？為什麼？
 ```{r}
-
+wage_data$lwage_demean <- 
+wage_data$union_demean <-
+wage_data$educ.high_demean <-
 ```
 
 12. 考慮如下的模型
