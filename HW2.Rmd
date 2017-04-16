@@ -103,7 +103,7 @@ f1
 
 11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，那一個變數的離散度為零？為什麼？
 ```{r}
-wage_data$lwage_demean <- 
+wage_data$lwage_demean <-  
 wage_data$union_demean <-
 wage_data$educ.high_demean <-
 ```
