@@ -98,15 +98,17 @@ stargazer(pool1, pool2, type="text")
 
 10. 分別計算個別勞動者在樣本期間的平均lwage與平均union，接著畫出兩者間的離散圖及在圖面上加上估計迴歸線。由兩者間的關係，說明勞動者的固定效果如何影響lwage與union兩個變數。
 ```{r}
-#WAGE_data <- WAGE_data %>% group_by(nr) %>% mutate(mean(lwage))
-#WAGE_data <- WAGE_data %>% group_by(nr) %>% mutate(mean(union))
-#WAGE_data %>% group_by(nr) %>% ggplot(aes(x=mean(union) , y=mean(lwage))) + geom_point()
-#model3 <- mean(lwage)~ mean(union)
-#model3$coefficients
-#ggplot(data=WAGE_data, aes(x=mean(union),y=mean(lwage)), color=nr) + geom_point() -> f1
-#f1
-#f1 + stat_function(fun=function(x){model3$coefficients[1]+model3$coefficients[2]*x}, color="black") -> f.ols
-#f.ols
+WAGE_data <- WAGE_data %>% group_by(nr) %>% mutate(m.lwage=mean(lwage))
+WAGE_data <- WAGE_data %>% group_by(nr) %>% mutate(m.union=mean(union))
+WAGE_data <- ungroup(WAGE_data) 
+WAGE_data %>% ggplot(aes(x=m.union , y=m.lwage)) + geom_point() ->f1
+mreg<- lm(m.lwage~m.union, WAGE_data)
+str(mreg)
+mreg$coefficients
+f1
+f1 + stat_function(fun=function(x){mreg$coefficients[1]+mreg$coefficients[2]*x}, color="red") -> f.ols
+f.ols
+###就離散圖和估計迴歸線來看，加入工會越久(m.union較高)的人，其平均m.lwage也會跟著上升，至於勞動者的固定效果如何影響lwage與union兩個變數，我認為其中一個解釋是工作經驗的長短會同時影響lwage與union這兩個變數，工作經驗多的人領較高的薪資很正常，而工作經驗多的人也比較能夠知道工會的好處，而選擇加入。
 ```
 
 
