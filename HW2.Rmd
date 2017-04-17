@@ -10,19 +10,23 @@ output: html_notebook
 ```{r, message=FALSE, warning=FALSE}
 rm(list=ls())
 library(plm)
+library(dplyr)
+library(ggplot2)
+library(psych)
 ```
 
 
 1. 引入WAGEPAN.rda這個資料。
 ```{r}
-
+load("D:/DownLoads/WAGEPAN.rdata")
+WAGEPAN
 ```
 
 在WAGEPAN.rda這個資料中，nr代表某個勞動者，year代表資料所來自年份
 
 2. 請定義資料成為panel data，並取名WAGE_data。
 ```{r}
-
+WAGE_data <- pdata.frame(WAGEPAN,c("nr","year"))
 ```
 
 ***
@@ -30,14 +34,19 @@ library(plm)
 
 3. 使用str()檢查nr及year兩個變數的class, 並使用levels()來查看資料橫跨年份
 ```{r}
-
+str(WAGE_data$nr)
+str(WAGE_data$year)
+levels(WAGE_data$nr)
+levels(WAGE_data$year)
+#nr有545個且年份有8年
 ```
 
 > factor是代表類別資料的一種class，它可以細分成可排序(ordered)類別（如年份、月份）及不可排序(unordered)類別（如性別）。
 
 4. 請依照<http://stats.idre.ucla.edu/r/modules/factor-variables/>的說明，將year轉成可排序類別變數
 ```{r}
-
+WAGE_data$year <- ordered(WAGE_data$year)
+levels(WAGE_data$year)
 ```
 
 
