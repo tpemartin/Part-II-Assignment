@@ -127,14 +127,14 @@ LUmean
 lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
 union_demean<-Within(WAGE_data$union,effect=c('individual'))
 
-
-educ_demean<-Within(WAGE_data$educ,effect=c('individual'))
+educ.high<-(subset(WAGE_data,educ>=12))
+educ_demean<-Within(educ.high$educ,effect=c('individual'))
 library(psych)
 describe(lwage_demean)
 describe(union_demean)
 describe(educ_demean)
 
-#一輩子只會受一次教育,故並不會隨時間而改變,另兩項皆有機會隨時間改變
+#一輩子只會受一次教育,故並不會隨時間而改變,另兩項皆有機會隨時間改變,又或代表著此DATA中沒有在職進修的樣本存在
 ```
 
 12. 考慮如下的模型
