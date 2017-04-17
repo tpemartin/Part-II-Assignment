@@ -130,16 +130,21 @@ WAGE_data$lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
 $$lwage_{it}=\beta_{1}union_{it}+c_{i}+\epsilon_{it}$$
 請分別從固定效果（其估計式有時稱為within estimator）及隨機效果來估算$\beta_1$。
 ```{r, warning=FALSE}
-
+fixid_wage<-plm(reg1,data=WAGE_data, model ="within", effect ="individual")
+r_wage<-plm(reg1,data = WAGE_data, model = "random")
+stargazer(fixid_wage,r_wage,type = "text")
 ```
 
 13. 請檢定固定效果是否與勞動者的工會狀態有關連，並說明適不適合使用隨機效果模型。
 ```{r}
-
+phtest(fixid_wage,r_wage)
+#Hausman-test的p-value<5%，固定效果與工會狀態會有關係，不適合使用隨機效果模型。
 ```
 
 14. 請檢定是否存在單純與個人特質有關的隨機效果項，並說明適不適合使用Pooled OLS。
 ```{r}
-
+pols1
+pwtest(pols1)
+#存在與個人特質有關的隨機效果項，不適合使用Pooled OLS。
 ```
 
