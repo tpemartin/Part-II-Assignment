@@ -115,11 +115,14 @@ WAGE_data2
 pols1$coefficients
 WAGE_data2 %>% ggplot(aes(y=`mean(lwage)`,x=`mean(union)`))+geom_point()+stat_function(fun=function(x){pols1$coefficients[1]+pols1$coefficients[2]*x},color="black",linetype="dashed")->wage.ols.pols1
 wage.ols.pols1
+#在八年之內，平均參加工會程度愈高者，其平均薪資也會愈高。
 ```
 
 
 11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，那一個變數的離散度為零？為什麼？
 ```{r}
+WAGE_data$lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
+#邏輯型變數無法demean，因為用一個True/False去減平均值是很怪的一件事。
 
 ```
 
