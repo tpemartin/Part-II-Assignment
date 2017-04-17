@@ -126,7 +126,7 @@ stargazer(pool1, pool2,type = "text")
 11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，那一個變數的離散度為零？為什麼？
 ```{r}
 WAGE_data$lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
-#邏輯型變數無法demean，並且就算轉化為數值型態，仍舊無法demean，無法解決，所以接下來使用用educ demean而不是用educ_high demean
+#邏輯型變數無法demean，並且就算轉化為數值型態，仍舊無法demean，無法解決，所以接下來使用educ demean而不是用educ_high demean
 #WAGE_data$union_demean<-Within(as.numeric(WAGE_data$union),effect=c('individual'))
 WAGE_data$educ.high_demean<-Within(WAGE_data$educ,effect=c('individual'))
 describe(WAGE_data$educ.high_demean)
