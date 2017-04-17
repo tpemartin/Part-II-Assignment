@@ -89,11 +89,11 @@ $$lwage_{it}	=\beta_{0}+\beta_{1}union_{it}+\beta_{2}educ.high_{i}+\epsilon_{it}
 個別對兩個模型進行Pooled OLS估計，兩者的$\beta_1$係數估計值有什麼不同？為什麼？[hint: 可以使用stargazer套件，並以指令stargazer(model1,model2,type="text")將估計結果並列呈現以方便比較]
 ```{r, message=FALSE, warning=FALSE}
 model1<- lwage~union
-model1 %>% plm(data=wage_data,model="pooling")
+model1 %>% plm(data=wage_data,model="pooling")-> pls1
 model2<- lwage~union+educ.high
-model2 %>% plm(data=wage_data,model="pooling")
+model2 %>% plm(data=wage_data,model="pooling")-> pls2
 library(stargazer)
-stargazer(model1,model2,type="text")
+stargazer(pls1,pls2,type="text")
 ```
 Model2 control both join union and higher eduction. Higher education affects both wage and the decision of union, which we can observe the effect in question 8. Therefore, it's an important factor that should not be omitted.(violate A.3 assumption)
 
@@ -101,10 +101,15 @@ Model2 control both join union and higher eduction. Higher education affects bot
 ```{r}
 wage_data %>% group_by(nr) %>% summarise(mean(lwage),mean(union))-> nrdata
 nrdata
-nrdata %>% ggplot(aes(x=`mean(union)`,y=`mean(lwage)`))+geom_point()+geom_smooth(moedel=lm)->f1
+
+nrdata %>% ggplot(aes(x=`mean(union)`,y=`mean(lwage)`))+geom_point()+stat_function(fun=function(x){
+  pls1$coefficients[1]+pls1$coefficients[2]*x
+  },color="black",linetype="solid")+stat_function(fun=function(x){
+  pls2$coefficients[1]+pls2$coefficients[2]*x
+  },color="black",linetype="dashed")->f1
 f1
 ```
-
+If we control high education, the slope of model2 is steeper than model1, that is, the effect of joining the union to wage is stronger if he gets higher education. 
 
 11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，那一個變數的離散度為零？為什麼？
 ```{r}
@@ -113,6 +118,7 @@ wage_data$union_demean <- Within(wage_data$union,effect=c("individual"))
 wage_data$educ.high_demean <- Within(wage_data$educ.high,effect=c("individual"))
 wage_data %>% ggplot(aes(x=union_demean,y=lwage_demean,color=educ.high_demean))+geom_point()
 ```
+After we demean the factors, we have zero on both union and high education factors. Because I assume both union and high eduction are dummy variables, and they aren't easy to change. The years of  education are almost fixed after someone start to work. And after someone join a union, it is hard to drop out.
 
 12. 考慮如下的模型
 $$lwage_{it}=\beta_{1}union_{it}+c_{i}+\epsilon_{it}$$
@@ -131,7 +137,7 @@ The p-value is lower than 0.05, so the fixed effect model is related to join uni
 
 14. 請檢定是否存在單純與個人特質有關的隨機效果項，並說明適不適合使用Pooled OLS。
 ```{r}
-poolols<-model1 %>% plm(data=wage_data,model="pooling")
-pwtest(poolols)
+pls1
+pwtest(pls1)
 ```
 There exists random effect factors related to personality.
