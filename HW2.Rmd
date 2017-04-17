@@ -60,7 +60,7 @@ as.logical(wage_data$union)
 library(ggplot2)
 wage_data %>% ggplot(aes(x=union&TRUE,y=lwage))+geom_boxplot()
 ```
-
+The destribution of union&true is more centralize than union&false, and the quartile and mean of union&true are higher than that of union&false. Meanwhile, the maximum and minimum are closer in union&true, that is, join union might help centralize the wage distribution. 
 
 6. 請計算比較不同工會狀況的平均lwage差異[hint: 在作業1中，我們學到使用dplyr::group_by()與dplyr::summarise()來計算不同群組的組內特徵。]
 ```{r}
@@ -69,14 +69,18 @@ wage_data %>% group_by(union) %>% summarise(mean(lwage),sd(lwage))
 
  7. 我們擔心“單純比較不同工會狀態的平均薪資，反應出來的可能不會是單純的工會效果。會不會還包含教育年限的影響？” 請在不做迴歸估計下，單純觀察資料來判斷以上的擔心是否成立。
 ```{r}
-
+wage_data %>% group_by(educ,union) %>% summarise(mean(lwage)) -> meanlwage
+meanlwage %>% ggplot(aes(x=educ,y=`mean(lwage)`,color=union))+geom_point()
 ```
+The worry is correct, higher education would have higher wage. We have to control the effect of education.
 
 8. 將資料依教育年限高低分成≥12與<12兩群(變數取名為educ.high)，使用educ.high與union兩變數，觀察不同教育年限與工會狀態間的平均log薪資差異，並描述你看到的現象（有故事性更好）。[hint: dplyr::group_by()可以放超過一個分類變數，用逗點分隔即可 ]
 ```{r}
 wage_data$educ.high <- wage_data$educ>=12
+wage_data$educ.high <- as.numeric(wage_data$educ.high)
 wage_data %>% group_by(educ.high,union) %>% summarise(mean(lwage),sd(lwage))
 ```
+This table shows the influence of wage if someone gets higher education or not and joins union or not. the one who earns the highest wage is both getting higher eduction and joining union, holding other factors unchange. And who earns the lowest wage is neither getting higher eduction nor joining union. The effect of getting higher eduction is better than joinin union for higher wage.
 
 ### 模型估計
 9. 考慮兩個迴歸模型：
@@ -91,6 +95,7 @@ model2 %>% plm(data=wage_data,model="pooling")
 library(stargazer)
 stargazer(model1,model2,type="text")
 ```
+Model2 control both join union and higher eduction. Higher education affects both wage and the decision of union, which we can observe the effect in question 8. Therefore, it's an important factor that should not be omitted.(violate A.3 assumption)
 
 10. 分別計算個別勞動者在樣本期間的平均lwage與平均union，接著畫出兩者間的離散圖及在圖面上加上估計迴歸線。由兩者間的關係，說明勞動者的固定效果如何影響lwage與union兩個變數。
 ```{r}
@@ -103,9 +108,10 @@ f1
 
 11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，那一個變數的離散度為零？為什麼？
 ```{r}
-wage_data$lwage_demean <-  
-wage_data$union_demean <-
-wage_data$educ.high_demean <-
+wage_data$lwage_demean <- Within(wage_data$lwage,effect=c("individual"))
+wage_data$union_demean <- Within(wage_data$union,effect=c("individual"))
+wage_data$educ.high_demean <- Within(wage_data$educ.high,effect=c("individual"))
+wage_data %>% ggplot(aes(x=union_demean,y=lwage_demean,color=educ.high_demean))+geom_point()
 ```
 
 12. 考慮如下的模型
@@ -113,18 +119,19 @@ $$lwage_{it}=\beta_{1}union_{it}+c_{i}+\epsilon_{it}$$
 請分別從固定效果（其估計式有時稱為within estimator）及隨機效果來估算$\beta_1$。
 ```{r, warning=FALSE}
 fe<- plm(model1,data=wage_data,model="within",effect="individual")
-summary(fe)
 re<- plm(model1,data=wage_data,model="random")
-summary(re)
+stargazer(fe,re,type="text")
 ```
 
 13. 請檢定固定效果是否與勞動者的工會狀態有關連，並說明適不適合使用隨機效果模型。
 ```{r}
-
+phtest(fe,re)
 ```
+The p-value is lower than 0.05, so the fixed effect model is related to join union or not. It's not suitable for random effect model.
 
 14. 請檢定是否存在單純與個人特質有關的隨機效果項，並說明適不適合使用Pooled OLS。
 ```{r}
-
+poolols<-model1 %>% plm(data=wage_data,model="pooling")
+pwtest(poolols)
 ```
-
+There exists random effect factors related to personality.
