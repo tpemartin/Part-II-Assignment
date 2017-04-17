@@ -109,12 +109,16 @@ id.mean %>% ggplot(aes(x=union,y=lwage)) + geom_point()+stat_function(fun=functi
 
 11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，那一個變數的離散度為零？為什麼？
 ```{r}
-WAGE_data$lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
-WAGE_data$educ.high_demean<-Within(WAGE_data$educ,effect=c('individual'))
-WAGE_data %>% ggplot(aes(x=educ.high_demean,y=lwage_demean))+geom_point()
-WAGE_data$union_demean<-Within(WAGE_data$union,effect=c('individual'))
+lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
+educ_demean<-Within(WAGE_data$educ,effect=c('individual'))
+#union_demean<-Within(WAGE_data$union,effect=c('individual'))
+sd(lwage_demean)
+#sd(union_demean)
+sd(educ_demean)
+ggplot(data=WAGE_data,aes(x=educ_demean,y=lwage_demean,color=year))+
+geom_point()
 ```
-union的離散度為0，因為它不是numeric vectors。
+教育水準的離散度為0，因為在資料期間各別勞動者的教育水準並未改變。union無法dmean因為不是numeric vectors。
 12. 考慮如下的模型
 $$lwage_{it}=\beta_{1}union_{it}+c_{i}+\epsilon_{it}$$
 請分別從固定效果（其估計式有時稱為within estimator）及隨機效果來估算$\beta_1$。
