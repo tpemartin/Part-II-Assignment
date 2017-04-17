@@ -18,7 +18,7 @@ library(psych)
 
 1. 引入WAGEPAN.rda這個資料。
 ```{r}
-load("d:/R/HW2/WAGEPAN.RData")
+load("C:/Users/user/Desktop/Part-II-Assignment/WAGEPAN.rdata")
 WAGEPAN
 ```
 
