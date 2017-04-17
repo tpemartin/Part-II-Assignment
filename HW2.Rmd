@@ -86,7 +86,7 @@ educ.high<-(WAGE_data$educ>=12)
 WAGE_data<-cbind(WAGE_data,educ.high)
 
 WAGE_data %>% dplyr::group_by(union,educ.high) %>% dplyr::summarise(mean(lwage))
-WAGE_data %>% ggplot(aes(x=educ.high,y=lwage,color=union))+geom_point()
+#平均薪資確實會受到工會狀態和教育年限所影響，當人們受到愈多的教育(人力資本提升)可以拿到更多的平均薪資，且因為有工會的存在，可以幫勞工爭取更多的平均薪資，不讓資方輕易剝削，即工會提高了勞工的議價能力。
 ```
 
 ### 模型估計
@@ -95,7 +95,13 @@ $$lwage_{it}	=\beta_{0}+\beta_{1}union_{it}+\epsilon_{it}...(model1)$$
 $$lwage_{it}	=\beta_{0}+\beta_{1}union_{it}+\beta_{2}educ.high_{i}+\epsilon_{it}...(model2)$$
 個別對兩個模型進行Pooled OLS估計，兩者的$\beta_1$係數估計值有什麼不同？為什麼？[hint: 可以使用stargazer套件，並以指令stargazer(model1,model2,type="text")將估計結果並列呈現以方便比較]
 ```{r, message=FALSE, warning=FALSE}
+library(stargazer)
+reg1 <- lwage~ union
+reg2 <- lwage~ union + educ.high
 
+pols1 <- plm(reg1, data=WAGE_data,model="pooling")
+pols2 <- plm(reg2, data=WAGE_data,model="pooling")
+stargazer(pols1,pols2,type="text")
 ```
 
 10. 分別計算個別勞動者在樣本期間的平均lwage與平均union，接著畫出兩者間的離散圖及在圖面上加上估計迴歸線。由兩者間的關係，說明勞動者的固定效果如何影響lwage與union兩個變數。
