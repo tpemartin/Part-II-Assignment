@@ -111,29 +111,50 @@ stargazer(pool1, pool2,type = "text")
 
 10. 分別計算個別勞動者在樣本期間的平均lwage與平均union，接著畫出兩者間的離散圖及在圖面上加上估計迴歸線。由兩者間的關係，說明勞動者的固定效果如何影響lwage與union兩個變數。
 ```{r}
-
+ WAGE_data %>%group_by(nr) %>% summarise(mean(lwage),mean(union))->WAGE_data2
+ 
+ WAGE_data2
+ pool1$coefficients
+ WAGE_data2 %>% ggplot(aes(y=`mean(lwage)`,x=`mean(union)`))+  geom_point()+stat_function(fun=function(x){
+   pool1$coefficients[1]+pool1$coefficients[2]*x
+   },color="black",linetype="dashed")->wage.ols.pool1
+ wage.ols.pool1
 ```
 
+勞動者的fixed effect(教育年限)，會使得沒加入工會的人們的薪資降低，但會使參加工會的薪資效果提升
 
 11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，那一個變數的離散度為零？為什麼？
 ```{r}
-
+WAGE_data$lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
+#邏輯型變數無法demean，並且就算轉化為數值型態，仍舊無法demean，無法解決，所以接下來使用用educ demean而不是用educ_high demean
+#WAGE_data$union_demean<-Within(as.numeric(WAGE_data$union),effect=c('individual'))
+WAGE_data$educ.high_demean<-Within(WAGE_data$educ,effect=c('individual'))
+describe(WAGE_data$educ.high_demean)
 ```
+
+教育年限的離散度為0，因為教育年限通常在工作後就固定了，其變數只會隨個體不同而相異，但並不會隨著時間而改變，然而加入工會後勞動者的薪資會隨著時間變化。
+
 
 12. 考慮如下的模型
 $$lwage_{it}=\beta_{1}union_{it}+c_{i}+\epsilon_{it}$$
 請分別從固定效果（其估計式有時稱為within estimator）及隨機效果來估算$\beta_1$。
 ```{r, warning=FALSE}
-
+fixid_wage<-plm(model1,data=WAGE_data, model ="within", effect ="individual")
+r_wage<-plm(model1,data = WAGE_data, model = "random")
+stargazer(fixid_wage,r_wage,type = "text")
 ```
 
 13. 請檢定固定效果是否與勞動者的工會狀態有關連，並說明適不適合使用隨機效果模型。
 ```{r}
-
+phtest(fixid_wage,r_wage)
 ```
+
+Hausman test 檢定結果顯示其p值小於5%，代表勞動者固定效果與工會加入與否有關係，因此並不適合使用隨機效果模型。
 
 14. 請檢定是否存在單純與個人特質有關的隨機效果項，並說明適不適合使用Pooled OLS。
 ```{r}
-
+pool1
+pwtest(pool1)
 ```
 
+結果顯示p值小於5%，代表存在單純與個人特質有關的隨機效果項，因此並不適合使用Pooled OLS。
