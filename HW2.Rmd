@@ -25,6 +25,7 @@ WAGEPAN
 在WAGEPAN.rda這個資料中，nr代表某個勞動者，year代表資料所來自年份
 
 2. 請定義資料成為panel data，並取名WAGE_data。
+(從WAGEPAN中抽取nr,year此兩類資料，進行資料定義與命名)
 ```{r}
 WAGE_data<-pdata.frame(WAGEPAN,c("nr","year"))
 ```
@@ -38,7 +39,8 @@ str(WAGE_data$nr)
 str(WAGE_data$year)
 levels(WAGE_data$nr)
 levels(WAGE_data$year)
-# nr 與 year 都是因子型變數，其中nr有545個，年份有8年
+# nr 和 year 都是因子型變數，其中nr有545個，表示這份資料包含了545位勞動者的資料；year
+# 為8，表示資料橫跨年度為8年(1980~1987)。
 
 ```
 
@@ -61,20 +63,21 @@ levels(WAGE_data$year)
 WAGE_data$union<- as.logical(WAGE_data$union)
 class(WAGE_data$union)
 WAGE_data %>% ggplot(aes(x=union,y=lwage))+geom_boxplot()
+WAGE_data %>% group_by(union)%>%summarise(mean(lwage))
 
-### 從圖中可以明顯的看出，加入工會的人的工資分佈相對來說更窄，，更為集中在中位數附近（四分位距變窄），且其最小值、中位數、上四分位數、下四分位數比沒加入工會的有明顯的提高，但最大值變小，看起來工會有降低高工資，提高低工資，并使工資分佈更為集中的效果。
+#觀察此兩個箱型圖可發現，加入工會的人其中位數、上四分位數、下四分位數比沒加入工會的人還來得高，且分布更為集中。但最大值變小，最小值變大，個人認為工會確實可以為弱勢族群爭取權益，因此能夠提高最小工資；但參加工會會產生所謂的協商議價成本，導致無法提高最高工資。即工作能力強者可能會選擇不加入工會，獨自與雇主進行協商，欲達到更高的薪資。
 ```
 
 
 6. 請計算比較不同工會狀況的平均lwage差異[hint: 在作業1中，我們學到使用dplyr::group_by()與dplyr::summarise()來計算不同群組的組內特徵。]
 ```{r}
-WAGE_data %>% dplyr::group_by(union) %>% dplyr::summarise(mean(lwage))
+WAGE_data %>% dplyr::group_by(union) %>% dplyr::summarise(mean(lwage),sd(lwage))
 ```
 
  7. 我們擔心“單純比較不同工會狀態的平均薪資，反應出來的可能不會是單純的工會效果。會不會還包含教育年限的影響？” 請在不做迴歸估計下，單純觀察資料來判斷以上的擔心是否成立。
 ```{r}
 WAGE_data %>% dplyr::group_by(educ) %>% dplyr::summarise(mean(lwage)) 
-### 可以看到總體平均薪資隨著教育的上升有個上升的趨勢 
+# 可以發現教育年限介於3~8年之間，隨著教育年限的增加，平均薪資不一定也是成長，當教育年限介於9~13年之間時，平均薪資才有隨著教育年限的增加而成長。
 
 WAGE_data %>% dplyr::group_by(union,educ) %>% dplyr::summarise(mean(lwage)) -> WAGE.mean
 names(WAGE.mean)[3]<-"mlwage"
@@ -89,7 +92,7 @@ WAGE_data<-cbind(WAGE_data,educ.high)
 
 WAGE_data %>% dplyr::group_by(union,educ.high) %>% dplyr::summarise(mean(lwage))
 
-## 薪資會受到來自教育年限和工會狀態有相關性，平均來看，其他條件不變下，教育年限越高，平均薪資越高（教育提高了人力資本）；加入工會的平均薪資比沒加入高（工會作為一個勞方阻止，提高了工薪階層與資方的議價能力）。
+#
 ```
 
 ### 模型估計
