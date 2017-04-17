@@ -65,8 +65,8 @@ ggplot(WAGE_data,aes(x=union2,y=lwage))+geom_boxplot()
 6. 請計算比較不同工會狀況的平均lwage差異[hint: 在作業1中，我們學到使用dplyr::group_by()與dplyr::summarise()來計算不同群組的組內特徵。]
 ```{r}
 WAGE_data%>%group_by(union2)%>%summarise(mean(lwage),sd(lwage))
-#有加入公會的人平均薪資較高，離散程度較小
-#沒加入公會的人平均薪資較低，離散程度較大
+#有加入公會的人會受到工會的保障，故平均薪資較高，離散程度較小
+#沒加入公會的人可能會出現賺大錢或是被壓榨的情況，故平均薪資較低，離散程度較大
 ```
 
  7. 我們擔心“單純比較不同工會狀態的平均薪資，反應出來的可能不會是單純的工會效果。會不會還包含教育年限的影響？” 請在不做迴歸估計下，單純觀察資料來判斷以上的擔心是否成立。
@@ -86,7 +86,7 @@ wage_union0%>%ggplot(aes(educ,lwage))+geom_point()+geom_smooth()
 ```{r}
 WAGE_data$educ.high <- WAGE_data$educ>=12
 WAGE_data%>%group_by(educ.high,union)%>%summarise(mean(lwage),sd(lwage))
-#無論加入工會與否，學歷較高的人平均log薪資都比較高
+#無論加入工會與否，學歷較高的人平均log薪資都比較高，表示大部分公司都比較喜歡高學歷的人
 #在相同的教育年限組別下，因工會會盡力爭取且保障員工權益，故平均log薪資較高
 ```
 
@@ -102,7 +102,7 @@ pool1 <- plm(model1,data=WAGE_data,model="pooling")
 pool2 <- plm(model2,data=WAGE_data,model="pooling")
 library(stargazer)
 stargazer(pool1,pool2,type="text")
-#pool2估計出來union的係數比pool1小，表示pool1遺漏了一個變數(educ.high)，且這個變數是會影響到薪資的。表示pool2估出來的結果是比較準的
+#pool2估計出來union的係數比pool1小，表示pool1遺漏了一個變數(educ.high)，且這個變數是會影響到薪資的。因此，pool2估出來的結果是比較準的
 ```
 
 10. 分別計算個別勞動者在樣本期間的平均lwage與平均union，接著畫出兩者間的離散圖及在圖面上加上估計迴歸線。由兩者間的關係，說明勞動者的固定效果如何影響lwage與union兩個變數。
