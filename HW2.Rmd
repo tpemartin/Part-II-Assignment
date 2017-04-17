@@ -18,7 +18,7 @@ library(psych)
 
 1. 引入WAGEPAN.rda這個資料。
 ```{r}
-load("d:/R/HW2/WAGEPAN.RData")
+load("C:\\Users\\菲比\\Documents\\Part-II-Assignment\\WAGEPAN.rdata")
 WAGEPAN
 ```
 
@@ -62,7 +62,7 @@ WAGE_data$union<- as.logical(WAGE_data$union)
 class(WAGE_data$union)
 WAGE_data %>% ggplot(aes(x=union,y=lwage))+geom_boxplot()
 
-### 從圖中可以明顯的看出，加入工會的人的工資分佈相對來說更窄，，更為集中在中位數附近（四分位距變窄），且其最小值、中位數、上四分位數、下四分位數比沒加入工會的有明顯的提高，但最大值變小，看起來工會有降低高工資，提高低工資，并使工資分佈更為集中的效果。
+### 從圖中可以看出，加入工會的工資分佈相對更窄，更為集中在中位數附近，且其最小值、中位數、上四分位數、下四分位數比沒加入工會的有明顯的提高，但最大值變小，工會有降低最高工資以及提高最低低工資的效果。
 ```
 
 
@@ -74,9 +74,10 @@ WAGE_data %>% dplyr::group_by(union) %>% dplyr::summarise(mean(lwage))
  7. 我們擔心“單純比較不同工會狀態的平均薪資，反應出來的可能不會是單純的工會效果。會不會還包含教育年限的影響？” 請在不做迴歸估計下，單純觀察資料來判斷以上的擔心是否成立。
 ```{r}
 WAGE_data %>% dplyr::group_by(educ) %>% dplyr::summarise(mean(lwage)) 
-### 可以看到總體平均薪資隨著教育的上升有個上升的趨勢 
+### 總體平均薪資會隨著教育程度的上升而有上升的趨勢 
 
 WAGE_data %>% dplyr::group_by(union,educ) %>% dplyr::summarise(mean(lwage)) -> WAGE.mean
+WAGE.mean
 names(WAGE.mean)[3]<-"mlwage"
 WAGE.mean %>% ggplot(aes(x=educ,y=mlwage,color=union))+geom_point()
 
@@ -89,7 +90,7 @@ WAGE_data<-cbind(WAGE_data,educ.high)
 
 WAGE_data %>% dplyr::group_by(union,educ.high) %>% dplyr::summarise(mean(lwage))
 
-## 薪資會受到來自教育年限和工會狀態有相關性，平均來看，其他條件不變下，教育年限越高，平均薪資越高（教育提高了人力資本）；加入工會的平均薪資比沒加入高（工會作為一個勞方阻止，提高了工薪階層與資方的議價能力）。
+## 薪資會受到教育年限和工會狀態而有相關性，平均而言，其他條件不變下，教育年限愈高，平均薪資愈高（教育提高了人力資本）；加入工會的平均薪資比沒加入高（工會提高了工薪階層與資方的議價能力）。
 ```
 
 ### 模型估計
@@ -106,21 +107,23 @@ pool1 <- plm(model1, data = WAGE_data, model = "pooling")
 pool2 <- plm(model2, data= WAGE_data, model = "pooling")
 stargazer(pool1, pool2,type = "text")
 
-## 教育年限是一個重要的解釋變數，它既會影響薪資，也會影響一個人是否加入工會的決定。如我們之前箱形圖看到的，加入工會的工資雖然會提高，但會更集中在平均值附近，也許接受高等教育的人對自己有更大的期望，因此會選擇不加入工會以謀求更高的薪資。
+## 教育年限是一個重要的解釋變數，它會影響薪資也會影響一個人是否加入工會的決定。加入工會的工資雖然會提高，但會更集中在平均值附近，接受高等教育的人對自己有更大的期望，因此會選擇不加入工會以謀求更高的薪資。
 ```
 
 10. 分別計算個別勞動者在樣本期間的平均lwage與平均union，接著畫出兩者間的離散圖及在圖面上加上估計迴歸線。由兩者間的關係，說明勞動者的固定效果如何影響lwage與union兩個變數。
 ```{r}
-WAGE_data %>% group_by(nr) %>% summarise_each(funs(mean)) ->id.mean
-id1<-lm(model1,data=id.mean)
-id2<-lm(model2,data=id.mean)
-id.mean %>% ggplot(aes(x=union,y=lwage)) + geom_point()+stat_function(fun=function(x){
-  id1$coefficients[1]+id1$coefficients[2]*x
-  },color="black",linetype="solid")  + stat_function(fun=function(x){
-  id2$coefficients[1]+id2$coefficients[2]*x
-  },color="black",linetype="dashed")
+ 
+ WAGE_data %>% group_by(nr) %>% summarise_each(funs(mean)) ->id.mean
+ id1<-lm(model1,data=id.mean)
+ id2<-lm(model2,data=id.mean)
+ id.mean %>% ggplot(aes(x=union,y=lwage)) + geom_point()+stat_function(fun=function(x){
+   id1$coefficients[1]+id1$coefficients[2]*x
+   },color="black",linetype="solid")  + stat_function(fun=function(x){
+   id2$coefficients[1]+id2$coefficients[2]*x
+   },color="black",linetype="dashed")
+ 
 
-## 勞動者的固定效果（教育），看起來會使得沒加入工會的薪資降低，但會使參加工會的效果提升
+## 可以看到當加入工會的機率越大薪水有越高的趨勢。
 ```
 
 
@@ -132,7 +135,7 @@ WAGE_data$lwage_demean<-Within(WAGE_data$lwage,effect=c('individual'))
 WAGE_data$educ.high_demean<-Within(WAGE_data$educ,effect=c('individual'))
 describe(WAGE_data$educ.high_demean)
 
-## 教育年限的離散度為0，因為教育年限通常在工作后就固定了，他只會隨個體不同而不同，但并不會隨時間改變，而加入工會、薪資會隨時間變動。
+## 一輩子只會受一次教育,故並不會隨時間而改變,另兩項皆有機會隨時間改變。
 ```
 
 12. 考慮如下的模型
@@ -149,7 +152,7 @@ stargazer(fixid_wage,r_wage,type = "text")
 ```{r}
 phtest(fixid_wage,r_wage)
 
-# Hausman test 檢定 p值小於5%，固定效果與工會狀態有關聯，不適合使用隨機效果模型
+# 由p-value可知檢定統計量顯著異於零,表示固定效果與勞動者工會有關,不適合使用隨機效果模型。
 ```
 
 14. 請檢定是否存在單純與個人特質有關的隨機效果項，並說明適不適合使用Pooled OLS。
@@ -157,5 +160,5 @@ phtest(fixid_wage,r_wage)
 pool1
 pwtest(pool1)
 
-# 存在與個人特質有關的隨機效果項，不適合使用 Pooled OLS.
+# 從p-value看出檢定統計量顯著異於零,表示從在個人特質的隨機效果項,不適合使用Pooled OLS。
 ```
