@@ -145,7 +145,7 @@ $$lwage_{it}=\beta_{1}union_{it}+c_{i}+\epsilon_{it}$$
 ```{r, warning=FALSE}
 fep1<-plm(mod1, data=WAGE_data, model='within', effect='individual')
 rep1<-plm(mod1, data=WAGE_data, model='random')
-stargazer(fep1,rep1,type="text")
+stargazer(fep1,rep1,type="text") 
 ```
 
 13. 請檢定固定效果是否與勞動者的工會狀態有關連，並說明適不適合使用隨機效果模型。
