@@ -126,6 +126,7 @@ describe(WAGE_data$lwage_demean)
 ```
 #從結果可以得知lwage demean後的離散程度不為零，但其離散程度有比demean前的離散程度小。
 #union 與 educ.high 不知如何 demean
+
 12. 考慮如下的模型
 $$lwage_{it}=\beta_{1}union_{it}+c_{i}+\epsilon_{it}$$
 請分別從固定效果（其估計式有時稱為within estimator）及隨機效果來估算$\beta_1$。
