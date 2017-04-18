@@ -108,22 +108,22 @@ stargazer(pool1,pool2,type="text")
 10. 分別計算個別勞動者在樣本期間的平均lwage與平均union，接著畫出兩者間的離散圖及在圖面上加上估計迴歸線。由兩者間的關係，說明勞動者的固定效果如何影響lwage與union兩個變數。
 ```{r}
 WAGE_data%>%group_by(nr)%>%summarise_each(funs(mean)) -> data_mean
-data_mean%>%ggplot(aes(x=union,y=lwage))+geom_point()+stat_function(fun = function(x){pool1$coefficients[1]+pool1$coefficients[2]*x},color="black",linetype="dashed")
-
-#
+data_mean%>%ggplot(aes(x=union,y=lwage))+geom_point()+stat_function(fun = function(x){pool1$coefficients[1]+pool1$coefficients[2]*x},color="black",linetype="solid")+stat_function(fun = function(x){pool2$coefficients[1]+pool2$coefficients[2]*x},color="black",linetype="dashed")
+#高學歷的人(勞動者的FE)加入工會會有較高的薪資
 ```
 
 
 11. 對lwage, union及educ.high進行組內demean，並觀察demean後的變數離散度，那一個變數的離散度為零？為什麼？
 ```{r}
-WAGE_data$lwage_demean <- Within(WAGE_data$lwage,effect = c("individual"))
-WAGE_data$union_demean <- Within(WAGE_data$union,effect = c("individual"))
-WAGE_data$educ.high_demean <- Within(WAGE_data$educ,effect = c("individual"))
-WAGE_data$lwage_demean
-WAGE_data$union_demean
-WAGE_data$educ.high_demean
-
-
+lwage_demean <- Within(WAGE_data$lwage,effect = c("individual"))
+union_demean <- Within(WAGE_data$union,effect = c("individual"))
+educ1 <- WAGE_data%>%subset(educ>=12)
+educ.high_demean <- Within(educ1$educ,effect = c("individual"))
+library(psych)
+describe(lwage_demean)
+describe(union_demean)
+describe(educ.high_demean)
+#教育年限的離散程度為零，因為在工作之後通常不會繼續進修，即教育年限不會隨時間改變
 ```
 
 12. 考慮如下的模型
