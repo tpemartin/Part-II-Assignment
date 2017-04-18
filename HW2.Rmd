@@ -145,7 +145,7 @@ stargazer(fixid_wage,r_wage,type = "text")
 ```{r}
 phtest(fixid_wage,r_wage)
 ```
-# Hausman test 檢定 p值小於5%，固定效果與工會狀態有關聯，不宜使用隨機效果模型
+# Hausman test 檢定 p值小於5%，固定效果與工會狀態有關聯，不宜使用隨機效果模型.
 
 
 14. 請檢定是否存在單純與個人特質有關的隨機效果項，並說明適不適合使用Pooled OLS。
