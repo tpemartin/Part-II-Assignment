@@ -18,8 +18,7 @@ library(psych)
 
 1. 引入WAGEPAN.rda這個資料。
 ```{r}
-load("D:/r/YOULOVEME/WAGEPAN.rdata")
-WAGEPAN
+load("WAGEPAN.RData")
 ```
 
 在WAGEPAN.rda這個資料中，nr代表某個勞動者，year代表資料所來自年份
@@ -37,8 +36,7 @@ WAGE_data
 ```{r}
 str(WAGE_data$nr)
 str(WAGE_data$year)
-levels(WAGE_data$nr)
-levels(WAGE_data$year)
+levels(WAGE_data$year
 ## 勞動者有545個,年份橫跨8年,兩者同為因子型變數
 ```
 
@@ -85,7 +83,7 @@ MWAGE %>% ggplot(aes(x=educ,y=mlwage,alpha=union))+geom_point()
 
 8. 將資料依教育年限高低分成≥12與<12兩群(變數取名為educ.high)，使用educ.high與union兩變數，觀察不同教育年限與工會狀態間的平均log薪資差異，並描述你看到的現象（有故事性更好）。[hint: dplyr::group_by()可以放超過一個分類變數，用逗點分隔即可 ]
 ```{r}
-educ.high<-(WAGE_data$educ>12)
+educ.high<-(WAGE_data$educ>=12)
 WAGE_data %>% dplyr::group_by(union,educ.high) %>% dplyr::summarise(mean(lwage))
 # 我們可以看出在較低教育水準的情況下,加入工會獲得較高的薪資提升,也許跟前面提到的工會門檻有關
 # 當人們擁有較高的教育水準時,加入工會的薪資提升就降低了,不過還是可以看出教育和工會都會跟薪資呈正向關係
@@ -130,9 +128,9 @@ describe(WAGE_data$educ.high_demean)
 $$lwage_{it}=\beta_{1}union_{it}+c_{i}+\epsilon_{it}$$
 請分別從固定效果（其估計式有時稱為within estimator）及隨機效果來估算$\beta_1$。
 ```{r, warning=FALSE}
-fw <- plm(model1,data=WAGE_data, model ="within", effect ="individual")
-rw <- plm(model1,data = WAGE_data, model = "random")
-stargazer(fw,rw,type = "text")
+fixid_wage<-plm(model1,data=WAGE_data, model ="within", effect ="individual")
+r_wage<-plm(model1,data = WAGE_data, model = "random")
+stargazer(fixid_wage,r_wage,type = "text",column.labels = c("FE","RE
 ```
 
 13. 請檢定固定效果是否與勞動者的工會狀態有關連，並說明適不適合使用隨機效果模型。
