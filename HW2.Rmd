@@ -59,7 +59,14 @@ class(WAGE_data$union)
 WAGE_data %>% ggplot(aes(x=union,y=lwage))+geom_boxplot()
 
 ### 從圖中可以明顯的看出，加入工會的人的工資分佈相對來說更窄，，更為集中在中位數附近（四分位距變窄），且其最小值、中位數、上四分位數、下四分位數比沒加入工會的有明顯的提高，但最大值變小，看起來工會有降低高工資，提高低工資，并使工資分佈更為集中的效果。
+
+# 丘丞剛
+##可以透過箱形圖看到不管有沒有加入工會中位數都是一樣的,但是我們可以發現沒有加入工會有著較大的離散度,
+##這意味著不加入工會風險較高,而這也代表有機會賺到較多的錢,但反之也可能收入非常低
 ```
+##
+雖然加入或不加入公會對一半的人差不多,
+但是若不加入公會的話離散質較大,代表著少了一些保障但反過來說少了工會限制薪資帽 會有更高的薪資##
 
 
 6. 請計算比較不同工會狀況的平均lwage差異[hint: 在作業1中，我們學到使用dplyr::group_by()與dplyr::summarise()來計算不同群組的組內特徵。]
@@ -75,7 +82,6 @@ WAGE_data %>% dplyr::group_by(educ) %>% dplyr::summarise(mean(lwage))
 WAGE_data %>% dplyr::group_by(union,educ) %>% dplyr::summarise(mean(lwage)) -> WAGE.mean
 names(WAGE.mean)[3]<-"mlwage"
 WAGE.mean %>% ggplot(aes(x=educ,y=mlwage,color=union))+geom_point()
-
 ```
 
 8. 將資料依教育年限高低分成≥12與<12兩群(變數取名為educ.high)，使用educ.high與union兩變數，觀察不同教育年限與工會狀態間的平均log薪資差異，並描述你看到的現象（有故事性更好）。[hint: dplyr::group_by()可以放超過一個分類變數，用逗點分隔即可 ]
@@ -86,6 +92,10 @@ WAGE_data<-cbind(WAGE_data,educ.high)
 WAGE_data %>% dplyr::group_by(union,educ.high) %>% dplyr::summarise(mean(lwage))
 
 ## 薪資會受到來自教育年限和工會狀態有相關性，平均來看，其他條件不變下，教育年限越高，平均薪資越高（教育提高了人力資本）；加入工會的平均薪資比沒加入高（工會作為一個勞方阻止，提高了工薪階層與資方的議價能力）。
+
+# 丘丞剛
+##受越多教育的人有相對較佳的薪資,而在加入工會後,平均來說又有更高的薪資,可知加入工會事件不錯的事
+##但我們可以發現教育年限較高者加入了工會比起教育年限低者加入工會的薪資漲幅較差,可能是教育年限低者的工會有較強勢的效果
 ```
 
 ### 模型估計
@@ -116,7 +126,8 @@ id.mean %>% ggplot(aes(x=union,y=lwage)) + geom_point()+stat_function(fun=functi
   id2$coefficients[1]+id2$coefficients[2]*x
   },color="black",linetype="dashed")
 
-## 勞動者的固定效果（教育），看起來會使得沒加入工會的薪資降低，但會使參加工會的效果提升
+# 丘丞剛
+##可以看到當加入工會的機率越大薪水有越高的趨勢
 ```
 
 
@@ -135,6 +146,7 @@ describe(WAGE_data$educ.high_demean)
 $$lwage_{it}=\beta_{1}union_{it}+c_{i}+\epsilon_{it}$$
 請分別從固定效果（其估計式有時稱為within estimator）及隨機效果來估算$\beta_1$。
 ```{r, warning=FALSE}
+
 fixid_wage<-plm(model1,data=WAGE_data, model ="within", effect ="individual")
 r_wage<-plm(model1,data = WAGE_data, model = "random")
 stargazer(fixid_wage,r_wage,type = "text",column.labels = c("FE","RE"))
