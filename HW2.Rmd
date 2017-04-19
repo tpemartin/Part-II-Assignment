@@ -14,7 +14,8 @@ library(readr)
 library(dplyr)
 ```
 
-
+getwd() get working directory 查工作路徑
+setwd("中間放路徑") 設新的工作路徑
 1. 引入WAGEPAN.rda這個資料。
 ```{r}
 load("~/Part-II-Assignment/WAGEPAN.rdata")
@@ -35,8 +36,11 @@ wage_data<-pdata.frame(wage_data,c("nr","year"))
 ```{r}
 str(wage_data$nr)
 str(wage_data$year)
-levels(wage_data$nr)
 levels(wage_data$year)
+dim(wage_data)
+dim(wage_data)[1]
+dim(wage_data)[2]
+pdim(wage_data)
 ```
 
 > factor是代表類別資料的一種class，它可以細分成可排序(ordered)類別（如年份、月份）及不可排序(unordered)類別（如性別）。
@@ -44,9 +48,11 @@ levels(wage_data$year)
 4. 請依照<http://stats.idre.ucla.edu/r/modules/factor-variables/>的說明，將year轉成可排序類別變數
 ```{r}
 year.order<-ordered(wage_data$year,levels=c("1980","1981","1982","1983","1984","1985","1986","1987"))
-View(year.order)
+year.order
 is.factor(year.order)
 ```
+wage_data$year<-ordered(wage_data$year)
+levels(wage_data$year)
 
 as.logical(wage_data$union)
 > WAGE_data裡有一些變數會隨著時間而改變，比如取對數後的實質薪資($lwage$)、工作經驗($exper$)、婚姻狀況($married$)和工會狀況($union$)。還有一些變數不會隨時間而改變，比如種族($hispan$和$black$)、教育年限($educ$)。
@@ -65,14 +71,22 @@ The destribution of union&true is more centralize than union&false, and the quar
 6. 請計算比較不同工會狀況的平均lwage差異[hint: 在作業1中，我們學到使用dplyr::group_by()與dplyr::summarise()來計算不同群組的組內特徵。]
 ```{r}
 wage_data %>% group_by(union) %>% summarise(mean(lwage),sd(lwage))
+wage_data %>% group_by(educ) %>% summarise(mean(lwage),sd(lwage))
 ```
+加入工會的薪水比沒加工會多18%
 
  7. 我們擔心“單純比較不同工會狀態的平均薪資，反應出來的可能不會是單純的工會效果。會不會還包含教育年限的影響？” 請在不做迴歸估計下，單純觀察資料來判斷以上的擔心是否成立。
 ```{r}
 wage_data %>% group_by(educ,union) %>% summarise(mean(lwage)) -> meanlwage
+meanlwage %>% ggplot(aes(x=union,y=`mean(lwage)`,color=educ))+geom_point()
 meanlwage %>% ggplot(aes(x=educ,y=`mean(lwage)`,color=union))+geom_point()
+wage_data %>% group_by(educ) %>% summarise(munion=mean(union)) -> data2
+data2 %>% ggplot(aes(x=educ,y=munion))+geom_point()
 ```
-The worry is correct, higher education would have higher wage. We have to control the effect of education.
+The worry is correct, higher education would have higher wage. We have to control the effect of education.A3假設，要寫到對Y的影響和對X的影響
+wage_data %>% group_by(educ,union) %>% summarise(mlwage=mean(lwage)) -> meanlwage，在summarise中直接加入要的變數名稱即可
+data2 %>% ggplot(aes(x=educ,y=munion))+geom_point():
+educ and munion has positive correlation, however, educ is high enough, the percentage that join a union is decreasing.(y axis is the probability that who join the union)
 
 8. 將資料依教育年限高低分成≥12與<12兩群(變數取名為educ.high)，使用educ.high與union兩變數，觀察不同教育年限與工會狀態間的平均log薪資差異，並描述你看到的現象（有故事性更好）。[hint: dplyr::group_by()可以放超過一個分類變數，用逗點分隔即可 ]
 ```{r}
@@ -96,6 +110,8 @@ library(stargazer)
 stargazer(pls1,pls2,type="text")
 ```
 Model2 control both join union and higher eduction. Higher education affects both wage and the decision of union, which we can observe the effect in question 8. Therefore, it's an important factor that should not be omitted.(violate A.3 assumption)
+At the same educ.educ, the wage is only 16% higher than those who doesn't join the union.
+model1 overestimate.
 
 10. 分別計算個別勞動者在樣本期間的平均lwage與平均union，接著畫出兩者間的離散圖及在圖面上加上估計迴歸線。由兩者間的關係，說明勞動者的固定效果如何影響lwage與union兩個變數。
 ```{r}
@@ -117,6 +133,7 @@ wage_data$lwage_demean <- Within(wage_data$lwage,effect=c("individual"))
 wage_data$union_demean <- Within(wage_data$union,effect=c("individual"))
 wage_data$educ.high_demean <- Within(wage_data$educ.high,effect=c("individual"))
 wage_data %>% ggplot(aes(x=union_demean,y=lwage_demean,color=educ.high_demean))+geom_point()
+wage_data %>% ggplot(aes(x=educ.high_demean,y=lwage_demean,color=union_demean))+geom_point()
 ```
 After we demean the factors, we have zero on both union and high education factors. Because I assume both union and high eduction are dummy variables, and they aren't easy to change. The years of  education are almost fixed after someone start to work. And after someone join a union, it is hard to drop out.
 
@@ -128,6 +145,7 @@ fe<- plm(model1,data=wage_data,model="within",effect="individual")
 re<- plm(model1,data=wage_data,model="random")
 stargazer(fe,re,type="text")
 ```
+fe: wage increasing 7.5%(C_i and union are related); re: wage increasing 10.2%(assume C_i and union are not related). That is, fixed effect(C_i) is related to union.
 
 13. 請檢定固定效果是否與勞動者的工會狀態有關連，並說明適不適合使用隨機效果模型。
 ```{r}
