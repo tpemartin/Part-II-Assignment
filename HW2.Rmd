@@ -56,7 +56,7 @@ levels(WAGE_data$year)
 ```{r}
 WAGE_data$union<- as.logical(WAGE_data$union)
 class(WAGE_data$union)
-WAGE_data %>% ggplot(aes(x=union,y=lwage))+geom_boxplot()
+WAGE_data %>% ggplot(aes(x=union,y=lwage))+geom_violin()
 
 ### 從圖中可以明顯的看出，加入工會的人的工資分佈相對來說更窄，，更為集中在中位數附近（四分位距變窄），且其最小值、中位數、上四分位數、下四分位數比沒加入工會的有明顯的提高，但最大值變小，看起來工會有降低高工資，提高低工資，并使工資分佈更為集中的效果。
 ```
